@@ -1,0 +1,102 @@
+I think doing Assignment 2 (b) is sufficient to prove Assignment 3, still in manual this is the approach followed and it felt like an easier one so we will also follow along!
+Assignment 3 : Connect to any Ethereum wallet. e.g. MetaMask. Deploy the contract with testnet. Connect your wallet with your web app. Call the deployed contract through your web app. Then store the wave messages from users in arrays using structs.
+Step 1 : Ensure you have Metamask setup done in your local with all that extension jazz!
+Follow this for any metamask query : https://youtu.be/Tvf7CXEjFNU?si=V2yqHsBxHfHCOgJV&t=371
+Step 2 : If you don’t have ETH into your Sepolia Etherum done in assignment 2 (b) then follow this : 
+Test Money (Sepolia ETH): We need "fake" money to pay for the "gas" (transaction fees) to deploy our contract on a public test network.
+The assignment mentions Rinkeby/Ropsten, but those are deprecated (no longer used). The modern, standard testnet is Sepolia.
+Action:
+In MetaMask, go to network tab and select "Sepolia". (You may need to toggle "Show test networks" in settings and edit option and then click save).
+
+Go to a Google Faucet (a site that gives free test ETH). The link is https://cloud.google.com/application/web3/faucet. Select network as Etherum Sepolia and address from metamask setting go to address and select Etherum and  get some fake tokens in your account.
+
+Step 3 : Remix: compile & deploy the contract
+You already have the contract code. Steps:
+Open Remix: https://remix.ethereum.org.
+
+
+In File Explorer create WavePortal.sol and paste your contract code (the code you included is fine):
+```
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+contract WavePortal {
+    struct Wave {
+        address waver;
+        string message;
+        uint256 timestamp;
+    }
+    Wave[] public waves;
+    uint256 public totalWaves;
+    event NewWave(address indexed from, string message, uint256 timestamp);
+
+    constructor() {
+        totalWaves = 0;
+    }
+
+    function wave(string memory _message) public {
+        waves.push(Wave(msg.sender, _message, block.timestamp));
+        totalWaves += 1;
+        emit NewWave(msg.sender, _message, block.timestamp);
+    }
+
+    function getAllWaves() public view returns (Wave[] memory) {
+        return waves;
+    }
+
+    function getTotalWaves() public view returns (uint256) {
+        return totalWaves;
+    }
+}
+```
+Click Solidity compiler (left pane). Select a compiler near 0.8.x (e.g., 0.8.20) — matching pragma. Click Compile WavePortal.sol. Fix any errors (should compile cleanly).
+
+
+Click Deploy & Run Transactions. In Environment choose Injected Provider - MetaMask. This makes Remix use MetaMask’s provider (window.ethereum).
+
+
+MetaMask will pop up asking to connect to Remix — approve.
+
+
+Ensure MetaMask is on the Sepolia testnet and account with test ETH is selected.
+
+
+In Remix, under Contract, confirm WavePortal is selected and click Deploy.
+
+
+MetaMask will open a transaction confirmation showing gas estimate. Confirm.
+
+
+Wait for the tx to be mined — Remix will show the deployed contract under Deployed Contracts and show the contract address. Copy that address.
+
+
+Verify transaction
+Click the transaction hash link Remix shows; it will open the testnet explorer (e.g., Sepolia Etherscan) to view details (block number, gas used, etc).
+Step 4. Get ABI (for the front end)
+Go to WavePortal.json in artifacts and find “abi” and Copy the Whole JSON ABI array!!
+
+
+5) Minimal web app: connect wallet, send wave, read waves
+Create a simple index.html and include ethers.js (CDN). Put your contract address and abi into the script.
+Find the code in github repo : 
+https://github.com/Vinay-Basargekar/smartContract-webapp
+What to replace (In line number 29 & 30)
+PASTE_YOUR_DEPLOYED_CONTRACT_ADDRESS_HERE → the address Remix showed after deployment.
+
+
+P​ASTE_FULL_ABI_FROM_REMIX_HERE → the full ABI JSON array (paste verbatim).
+
+
+How to run
+Save file as index.html. Open it (double-click) in the same browser that has MetaMask.
+
+
+Click Connect Wallet. Approve MetaMask prompt.
+
+
+Type a message and click Send Wave — MetaMask will show a transaction to confirm (gas cost shown in test ETH). Confirm and wait for mining.
+
+
+Click Get All Waves to read stored waves and display them.
+
+
+
