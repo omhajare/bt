@@ -1,0 +1,145 @@
+Assignment 2: Build and Deploy a Smart Contract Locally Using Hardhat
+Refer this chat works perfectly : https://chatgpt.com/share/68f5f98c-f054-8012-b406-bfb15edadbad
+
+Step-by-Step Setup
+🪄 Step 1 — Install Requirements
+Make sure you have:
+Node.js (download from https://nodejs.org)
+
+
+VS Code
+
+
+To check if Node.js and npm are installed:
+node -v
+npm -v
+
+Or install Latest version of node which is 22:
+
+
+Node install 22
+
+Step 2 — Create Project Folder
+Open your terminal and run:
+# Step 1: Create a new folder and go inside it
+mkdir Exp2_hardhat
+cd Exp2_hardhat
+
+# Step 2: Initialize npm project
+npm init -y
+
+# Step 3: Initialize a new Hardhat project
+npx hardhat --init
+When prompted:
+Choose hardhat-2
+
+
+Path: .
+
+
+Project type: mocha-ethers-js
+
+
+It will suggest installing dependencies — press Y
+
+
+This automatically installs all needed packages like hardhat, ethers, chai, etc.
+
+Step 4. Write the Smart Contract
+Now create your own contract named WavePortal.sol
+📁 Create file:
+ contracts/WavePortal.sol
+✍️ Add this code:
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract WavePortal {
+    uint256 totalWaves;  // to keep count of total waves
+
+    event NewWave(address indexed from, uint256 timestamp);
+
+    function wave() public {
+        totalWaves += 1;
+        emit NewWave(msg.sender, block.timestamp);
+    }
+
+    function getTotalWaves() public view returns (uint256) {
+        return totalWaves;
+    }
+}
+
+Step 5. Compile the Contract
+Run:
+npx hardhat compile
+✅ If everything’s fine, you’ll see:
+Compiled 1 Solidity file successfully
+
+This means Hardhat converted your Solidity code into bytecode + ABI (needed for deployment).
+🚀 Step 6. Deploy the Contract Locally
+We’ll now deploy it to Hardhat’s built-in local blockchain (which runs in memory).
+📁 add the script: scripts/deploy.js
+✍️ Replace content with:
+const { ethers } = require("hardhat");
+
+async function main() {
+  const WavePortal = await ethers.getContractFactory("WavePortal");
+  const wavePortal = await WavePortal.deploy();
+
+  await wavePortal.waitForDeployment();
+  console.log("WavePortal deployed to:", wavePortal.target);
+
+  let count = await wavePortal.getTotalWaves();
+  console.log("Total waves:", count.toString());
+
+  const waveTxn = await wavePortal.wave();
+  await waveTxn.wait();
+
+  count = await wavePortal.getTotalWaves();
+  console.log("Total waves after waving:", count.toString());
+}
+
+main()
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
+
+Step 7. Run the Deployment Script
+Now deploy locally:
+npx hardhat run scripts/deploy.js
+
+✅ Output should look like:
+WavePortal deployed to: 0x5FbDB2315678afecb367f032d93F642f64180aa3
+Total waves: 0
+Total waves after waving: 1
+
+This means:
+Your contract is successfully deployed.
+
+
+You called wave() once, and total waves = 1.
+Step 8. Interact Using Hardhat Console
+To manually interact:
+npx hardhat console
+
+Then inside console:
+const WavePortal = await ethers.getContractFactory("WavePortal");
+const wavePortal = await WavePortal.deploy();
+await wavePortal.waitForDeployment();
+
+// check waves count
+(await wavePortal.getTotalWaves()).toString();
+
+// send a wave
+await wavePortal.wave();
+
+// check again
+(await wavePortal.getTotalWaves()).toString();
+
+✅ Output:
+'0'
+'1'
+
+🎉 This confirms your smart contract is working correctly.
+We successfully built and deployed a smart contract locally using Hardhat and interacted with it through console commands.
