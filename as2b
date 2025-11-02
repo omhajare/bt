@@ -1,0 +1,206 @@
+Next step (for Assignment 2(b)) will involve:
+Deploying this same contract on a public testnet (like Sepolia)
+
+
+Connecting MetaMask wallet
+
+
+Creating a simple web frontend that interacts with it
+References : https://github.com/Vinay-Basargekar/hardhat_Ethereum
+gemini chat for part B : https://docs.google.com/document/d/15MWk1w9z-LnF6NCGZSNGAdN6GGrtErky7KD8ClR0lUU/edit?usp=sharing
+Step 1 : Get Your "Real World" Tools (One-Time Setup)
+Before we can deploy, you need three things you don't need for local-only testing:
+A Wallet (MetaMask): This is your digital identity and wallet on the blockchain.
+Action: Go to metamask.io and install the browser extension.
+For me I’ve just signed up from a google account and then recovered my private key and Recovery phrase from settings and stored them in Passwords app!!
+Follow the setup to create your first wallet. WRITE DOWN YOUR 12-WORD SECRET RECOVERY PHRASE on paper and store it somewhere safe. This is your only backup.
+Youtube link: https://youtu.be/Tvf7CXEjFNU?si=V2yqHsBxHfHCOgJV&t=371
+Test Money (Sepolia ETH): We need "fake" money to pay for the "gas" (transaction fees) to deploy our contract on a public test network.
+The assignment mentions Rinkeby/Ropsten, but those are deprecated (no longer used). The modern, standard testnet is Sepolia.
+Action:
+In MetaMask, go to network tab and select "Sepolia". (You may need to toggle "Show test networks" in settings and edit option and then click save).
+
+Go to a Google Faucet (a site that gives free test ETH). The link is https://cloud.google.com/application/web3/faucet. Select network as Etherum Sepolia and address from metamask setting go to address and select Etherum and  get some fake tokens in your account.
+
+This faucet requires you to have a free Alchemy account. 
+3. An API Key (Alchemy): To talk to the blockchain from our code, we need a stable connection. A "node provider" like Alchemy gives us this.
+Action:
+In your new Alchemy account, go to your Dashboard.
+Click "Create new app"(If not made already by default).
+Set the Chain to Ethereum and the Network to Sepolia.
+Give it a name (like "My Wave App") and click "Create app".
+Click on your new app's name, then click "View Key".
+Find the HTTPS URL. It will look something like https://eth-sepolia.g.alchemy.com/v2/YOUR_API_KEY. Copy this URL. We'll need it soon.
+Alchemy URL : https://eth-sepolia.g.alchemy.com/v2/VHSl86XJw_5TrKLx8UwqG
+
+
+Step 2: Upgrade Your Hardhat Project
+Now, let's go back to your VS Code project from Part A and make some changes.
+A. Install dotenv to keep your keys safe
+We need to store your new API key and wallet key securely.
+In your Hardhat project terminal, run:
+
+npm install dotenv
+In the root of your project (the same level as hardhat.config.js), create a new file named .env
+IMPORTANT: Open your .gitignore file and add this one line to the bottom. This stops you from ever accidentally uploading your secret keys to GitHub.
+	.env
+Open your new .env file and add two things:
+The Alchemy HTTPS URL you copied.
+Your MetaMask Private Key.
+To get this: In MetaMask -> click the three dots (⋮) -> Account Details -> get Private Key.
+WARNING: NEVER, EVER SHARE THIS KEY WITH ANYONE. IT IS THE MASTER KEY TO ALL YOUR FUNDS.
+Your .env file should look like this:
+
+ALCHEMY_API_URL="https://eth-sepolia.g.alchemy.com/v2/YOUR_API_KEY"
+SEPOLIA_PRIVATE_KEY="YOUR_METAMASK_PRIVATE_KEY_HERE"
+B. Update hardhat.config.js
+Replace your entire hardhat.config.js file with this. It's set up to read your .env file securely.
+```
+require("@nomicfoundation/hardhat-toolbox");
+require("dotenv").config(); // Add this line
+
+// Get the environment variables
+const { ALCHEMY_API_URL, SEPOLIA_PRIVATE_KEY } = process.env;
+
+/** @type import('hardhat/config').HardhatUserConfig */
+module.exports = {
+  solidity: "0.8.24",
+  networks: {
+    // Add this 'sepolia' network configuration
+    sepolia: {
+      url: ALCHEMY_API_URL,
+      accounts: [SEPOLIA_PRIVATE_KEY]
+    }
+  }
+};
+```
+
+C. Update your WavePortal.sol Contract
+This is the new contract from your assignment. It adds structs to store messages.
+Go to contracts/WavePortal.sol and replace all the code with this:
+```
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
+
+import "hardhat/console.sol";
+
+contract WavePortal {
+    uint256 totalWaves;
+    
+    // This is a "struct" - a custom data type
+    struct Wave {
+        address sender; // The address of the person who waved
+        string message;  // The message they sent
+        uint256 timestamp; // The time the wave happened
+    }
+
+    // This is an array that will store all the Wave structs
+    Wave[] waves;
+
+    // This is an "event" - it's like a broadcast.
+    // Our web app can listen for this to know a new wave happened.
+    event NewWave(address indexed sender, string message, uint256 timestamp);
+
+    constructor() {
+        console.log("I am a smart contract, and I am ALIVE!");
+    }
+
+    // This function now takes a '_message' string
+    function wave(string memory _message) public {
+        totalWaves += 1;
+        console.log("%s has waved with message: %s", msg.sender, _message);
+
+        // Add a new Wave struct to our 'waves' array
+        waves.push(Wave(msg.sender, _message, block.timestamp));
+
+        // Emit the event so our web app can see it
+        emit NewWave(msg.sender, _message, block.timestamp);
+    }
+
+    // Gets the total wave count
+    function getTotalWaves() public view returns (uint256) {
+        return totalWaves;
+    }
+
+    // Gets the full array of all Wave structs
+    function getAllWaves() public view returns (Wave[] memory) {
+        return waves;
+    }
+}
+```
+Important: Run npx hardhat compile again in your terminal to make sure the new contract compiles correctly.
+Step 3: Deploy to the Sepolia Testnet
+we'll use a proper deploy.js script.
+Go to your scripts/ folder. Create a new file named deploy.js and paste this code:
+```
+const hre = require("hardhat");
+
+async function main() {
+  // Get the "recipe" for the contract
+  const waveContractFactory = await hre.ethers.getContractFactory("WavePortal");
+  
+  // "Deploy" the contract (build it and put it on the blockchain)
+  console.log("Deploying contract to Sepolia...");
+  const waveContract = await waveContractFactory.deploy();
+  
+  // Wait for it to be officially deployed
+  await waveContract.waitForDeployment();
+  
+  // Log the final address
+  const contractAddress = await waveContract.getAddress();
+  console.log("Contract deployed to:", contractAddress);
+}
+
+// Standard pattern to run the 'main' function and catch errors
+main()
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
+```
+Now, run the deployment! This command tells Hardhat to use the --network sepolia config we added.
+npx hardhat run scripts/deploy.js --network sepolia
+
+It will take about 15-30 seconds. You'll see: Deploying contract to Sepolia... Contract deployed to: 0x........................................
+Success! You have deployed your contract to a public testnet. ACTION: COPY THIS DEPLOYED ADDRESS. IT'S CRUCIAL.
+You can even copy that address and paste it into the search bar on sepolia.etherscan.io to see your contract living on the blockchain.
+
+Sepolia address you can check : 0x79b0745bd4FF2226CD94DAf4bc6BB2afDfF4ABE3 
+Step 4: Build Your Web App "Frontend"
+Now we build the "control panel" (website) for your contract.
+In your Hardhat project, create a new folder named frontend.
+Inside frontend, create one file named index.html.
+Paste all of the following code into index.html. This is a complete, minimal web app.
+Copy code from here : https://github.com/Vinay-Basargekar/hardhat_Ethereum/tree/main/frontend
+The "Magic" ABI (Application Binary Interface)
+Your index.html file has a variable contractABI that is empty. We need to fill it.
+In your VS Code project, navigate to this file: artifacts/contracts/WavePortal.sol/WavePortal.json
+Open this file. It's a huge JSON file.
+Find the key named "abi". It will be followed by a giant array [...].
+Copy the entire array, starting from the [ and ending at the ].
+Paste this array into the contractABI variable in your index.html file.
+Step 5: Run Your Web App!
+You can't just double-click the index.html file because of security rules. You need to serve it from a local web server.
+The easiest way is with the VS Code "Live Server" extension:
+In VS Code, go to the Extensions tab (the square icons).
+Search for and install "Live Server" by Ritwick Dey.
+Go back to your frontend/index.html file in the explorer.
+Right-click on index.html.
+Select "Open with Live Server".
+Your web browser will automatically open, and you'll see your app!
+To use it:
+Click "Connect Wallet". MetaMask will pop up and ask for permission.
+Once connected, your total wave count will load.
+Type a message (e.g., "Hello from my first dApp!") in the box.
+Click "Wave at Me!".
+MetaMask will pop up again, asking you to "Confirm" the transaction. This is you paying the (Sepolia) gas fee to call the wave function.
+Click "Confirm".
+The button will say "Sending... ⏳". After 10-20 seconds (once the block is mined on Sepolia), the new wave will automatically appear at the top of your list!
+Conclusion for Part B
+You have successfully built and deployed a full-stack, decentralized application (dApp). You learned to:
+Use a real wallet (MetaMask) and a public testnet (Sepolia).
+Securely deploy a contract using an .env file and API key.
+Build a web app frontend with ethers.js.
+Connect your frontend to your backend (the contract) using its address and ABI.
+Call both "read" functions (getTotalWaves) and "write" functions (wave), which require a signed transaction.
