@@ -1,3 +1,127 @@
+---------topper->
+
+npm init -y
+
+npm install --save-dev hardhat@2.22.2
+
+mkdir test
+
+mkdir scripts
+
+mkdir contracts
+
+create hardhat.config.js  -> require("@nomicfoundation/hardhat-toolbox");
+
+module.exports = {
+  solidity: "0.8.24",
+};
+
+
+npm install --save-dev @nomicfoundation/hardhat-toolbox
+
+contracts/WavrPortal.sol -> // SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract WavePortal {
+    uint256 totalWaves;
+
+    event NewWave(address indexed from, uint256 timestamp, string message);
+
+    struct Wave {
+        address waver;
+        string message;
+        uint256 timestamp;
+    }
+
+    Wave[] waves;
+
+    constructor() {
+        totalWaves = 0;
+    }
+
+    function wave(string memory _message) public {
+        totalWaves += 1;
+        waves.push(Wave(msg.sender, _message, block.timestamp));
+        emit NewWave(msg.sender, block.timestamp, _message);
+    }
+
+    function getTotalWaves() public view returns (uint256) {
+        return totalWaves;
+    }
+
+    function getAllWaves() public view returns (Wave[] memory) {
+        return waves;
+    }
+}
+
+
+
+scripts/deploy.js -> async function main() {
+  const WavePortal = await ethers.getContractFactory("WavePortal");
+  const wavePortal = await WavePortal.deploy();
+
+  await wavePortal.waitForDeployment();
+
+  console.log("✅ WavePortal deployed to:", wavePortal.target);
+  process.exit(0);
+}
+
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});
+
+
+npx hardhat compile
+
+npx hardhat node
+
+new terminal ->>>>
+
+npx hardhat run scripts/deploy.js --network localhost
+
+
+
+scripts/interact.js -> const { ethers } = require("hardhat");
+
+async function main() {
+  const contractAddress = "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9"; // replace this
+
+  const WavePortal = await ethers.getContractFactory("WavePortal");
+  const wavePortal = await WavePortal.attach(contractAddress);
+
+  console.log("Sending a wave...");
+  const waveTxn = await wavePortal.wave("Hello from Sarthak!");
+  await waveTxn.wait();
+
+  const count = await wavePortal.getTotalWaves();
+  console.log("Total number of waves:", Number(count));
+}
+
+main().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});
+ 
+
+npx hardhat run scripts/interact.js --network localhost
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-------V-way-> 
+
 Assignment 2: Build and Deploy a Smart Contract Locally Using Hardhat
 Refer this chat works perfectly : https://chatgpt.com/share/68f5f98c-f054-8012-b406-bfb15edadbad
 
