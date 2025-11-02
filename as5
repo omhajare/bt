@@ -1,0 +1,123 @@
+Ass 5 - Hyperledger Fabric application 
+
+Requires to run Linux/ubuntu commands 
+Windows user : 
+Make sure to do windows setup for that before following these steps!
+🧠 What the Project Is
+This is a full-stack web app that lets you interact with a Hyperledger Fabric blockchain — for example:
+See assets stored on the blockchain,
+
+
+Create new assets,
+
+
+Register users, etc.
+
+
+The backend (Node.js/Express) talks to the Fabric network through the Fabric SDK, and the frontend (HTML/JS) provides a UI for you.
+
+🧩 How It Works (High-Level Flow)
+You set up a Fabric blockchain network locally using Docker containers.
+
+
+You deploy a smart contract (chaincode) called asset-transfer-basic.
+
+
+You start the web app, which connects to that network.
+
+
+You use the browser UI to enroll users, create/query assets, etc.
+
+Step 1: Clone the Repository
+This downloads the project files from GitHub to your local system.
+git clone https://github.com/PrashantPatil10178/BT-5.git
+cd BT-5
+
+After this:
+You’ll have a folder BT-5/
+
+
+Inside it are files like setup.sh, package.json, and source code.
+
+Step 2: Install Dependencies
+This installs all Node.js packages the web app needs (like Express, Fabric SDK, etc.):
+npm install
+You’ll see a folder named node_modules created.
+
+Step 3: Run the Setup Script (setup.sh)
+This is the heart of the setup.
+ Instead of you manually starting Fabric, deploying chaincode, and configuring things, this script automates everything.
+Run it:
+./setup.sh
+
+
+
+If you’re on macOS, this will execute directly. If you get an error, create a new setup_mac.sh file in the directory :
+```
+#!/bin/bash
+set -e
+
+echo "📦 Updating Homebrew..."
+brew update
+
+echo "🔧 Installing dependencies (git, jq, docker, dos2unix)..."
+brew install git jq dos2unix
+
+# Docker Desktop provides docker and docker-compose
+if ! command -v docker &>/dev/null; then
+  echo "🐳 Please install Docker Desktop manually from https://www.docker.com/products/docker-desktop/"
+  open https://www.docker.com/products/docker-desktop/
+  exit 1
+fi
+
+echo "📦 Installing Node.js (LTS)..."
+brew install node
+
+echo "🐹 Installing Go..."
+brew install go
+
+echo "✅ Verifying installations..."
+node --version
+npm --version
+go version
+docker --version
+docker-compose version
+
+echo "📥 Downloading Hyperledger Fabric samples and binaries..."
+curl -sSL https://bit.ly/2ysbOFE | bash -s
+
+cd fabric-samples/test-network
+
+echo "Unix-ifying scripts (running dos2unix)..."
+dos2unix ./network.sh
+
+echo "🧹 Cleaning up existing network..."
+./network.sh down
+
+echo "🚀 Starting Fabric network and creating channel named 'channel'..."
+./network.sh up createChannel -c channel
+
+echo "📦 Deploying basic chaincode to channel 'channel'..."
+./network.sh deployCC -ccn basic -ccp ../asset-transfer-basic/chaincode-javascript -ccl javascript -c channel
+
+echo "✅ Setup complete! The Fabric network is up and running on channel 'channel'."
+```
+Run Now : 
+./setup_mac.sh
+Step 4: 
+Starts the Web Server
+Finally, it runs:
+npm run dev
+
+which launches the web app (Express server) at http://localhost:3000.
+
+
+
+🧹 To Stop Everything Later
+When you’re done:
+# Stop the web app (Ctrl + C)
+# Then stop the Fabric network:
+cd ../fabric-samples/test-network
+./network.sh down
+
+
