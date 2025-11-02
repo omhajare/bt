@@ -1,0 +1,63 @@
+Creating a crypto wallet using metamask!!
+
+A Wallet (MetaMask): This is your digital identity and wallet on the blockchain.
+Action: Go to metamask.io and install the browser extension.
+For me I’ve just sign up from google account and then recovered my private key and Recovery phrase from setting and stored in Password app!!
+Follow the setup to create your first wallet. WRITE DOWN YOUR 12-WORD SECRET RECOVERY PHRASE on paper and store it somewhere safe. This is your only backup.
+Youtube link: https://youtu.be/Tvf7CXEjFNU?si=V2yqHsBxHfHCOgJV&t=371
+Terms must know!!
+What is Ethereum?
+Ethereum is a blockchain network that allows you not just to store transactions, but also run code on it.
+ That code is called a smart contract.
+So while Bitcoin is mostly for money transfers, Ethereum lets you create programs (decentralized apps, games, finance protocols, etc.) that live on the blockchain.
+
+🔹 What is a Smart Contract?
+A smart contract is like a small program stored on the blockchain.
+ It runs automatically when certain conditions are met.
+Example:
+function wave() public {
+    totalWaves += 1;
+}
+
+Whenever someone calls wave(), it adds +1 to the counter.
+ The contract itself stores this number forever (until you redeploy).
+These programs are written in Solidity (a language similar to JavaScript or C++).
+
+🔹 What is a Wallet?
+A wallet in blockchain = your identity.
+It has two keys:
+Public key → your “address” (like your bank account number)
+
+
+Private key → your password (used to sign transactions)
+
+
+You’ll use a wallet (like MetaMask) to:
+Store crypto (like ETH)
+
+
+Sign transactions (approve sending, deploying contracts)
+
+
+Connect to decentralized apps (dApps)
+
+
+For this experiment, we’ll create a wallet in MetaMask and use test ETH (fake coins) from a testnet.
+
+⚙️ 2. SETUP — Hardhat + Local Blockchain
+🧩 What is Hardhat?
+Hardhat is a developer tool that lets you:
+Create a local Ethereum blockchain (like a personal mini-network)
+
+
+Compile & test smart contracts
+
+
+Deploy to local or public networks (like testnets)
+
+
+Debug & interact with contracts
+
+
+It’s like a developer environment for Ethereum.
+
