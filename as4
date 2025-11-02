@@ -1,0 +1,83 @@
+Setup the Ethereum development environment. Generate addresses and create transactions.
+Step 1 : Run the following command to create a new directory and navigate into it:
+Bash
+
+
+mkdir eth-dev-env && cd eth-dev-env
+Now, initialize a new Node.js project. The -y flag accepts all the defaults.
+Bash
+
+
+npm init -y
+This creates a package.json file in your folder.
+Step 2: Install Hardhat
+Next, install the specific version of Hardhat mentioned in your assignment as a development dependency.
+In the same terminal window, run:
+npm install --save-dev hardhat@2.22.15
+This will download Hardhat and add it to your project.
+Step 3: Initialize Hardhat Project
+Now you'll use Hardhat's command-line interface (CLI) to create a sample project.
+Run the following command:
+npx hardhat
+You will be prompted with a few questions. Use your arrow keys to select the options from your assignment:
+What do you want to do?
+Select Create a JavaScript project and press Enter.
+Hardhat project root:
+Press Enter to accept the default location (your current folder).
+Do you want to add a .gitignore?
+Press Enter to accept y (Yes).
+Do you want to install this sample project's dependencies?
+Press Enter to accept y (Yes, install @nomicfoundation/hardhat-toolbox). This will create the contracts/, scripts/, and test/ folders, along with the hardhat.config.js configuration file.
+Step 4: Start Local Ethereum Node
+This is the core step where you start your own local blockchain.
+Run the following command in your terminal:
+npx hardhat node
+Your terminal will fill with important information:
+It will state Started HTTP and WebSocket JSON-RPC server at http://127.0.0.1:8545/.
+It will list 20 test accounts, each with 10,000 ETH.
+Crucially, it will list the Address and Private Key for each account.
+
+Keep this terminal window open! This is your running blockchain. If you close it, your local network stops.
+Step 5: Configure MetaMask
+Now, let's connect your MetaMask wallet to this new local blockchain.
+1. Add the Hardhat Network
+Open the MetaMask extension in your browser.
+Click the dropdown menu, go to networks and add a custom network.
+
+Fill in the form with the exact details from your node's output:
+Network Name: Hardhat Local
+New RPC URL: http://127.0.0.1:8545
+Chain ID: 31337
+Currency Symbol: ETH
+Click Save. MetaMask will automatically switch to your "Hardhat Local" network.
+
+2. Import a Test Account
+Go back to your terminal that is running npx hardhat node.
+Copy the Private Key for Account #0 (the first one in the list).
+In MetaMask, click the Account icon in the top-left, then select Add Wallet.
+
+Now select Import an accounts
+
+Paste the private key you just copied into the "private key" field.
+Click Import.
+Your MetaMask wallet will now show this account (e.g., "Account 2") with a balance of 10,000 ETH.
+
+
+Step 6: Create a Transaction
+Finally, let's simulate the transaction as described.
+In MetaMask, make sure you have your newly imported account (Account #0, with 10,000 ETH) selected.
+Click the Send button.
+Go back to your terminal and copy the Address (not the private key) for Account #1 (the second one in the list, likely 0x70997970C51812dc3A010C7d01b50e0d17dc79C8).
+Paste this address into the "Send to" field in MetaMask.
+In the Amount field, type 1.
+Click Next.
+A confirmation screen will appear. Click Confirm.
+Verification
+Instantly, the transaction will complete (no waiting for miners).
+Your balance for Account #0 will drop to 9999 ETH (minus a tiny gas fee, so it might be 9998.99...).
+Click the Activity tab in MetaMask. You will see the "Send" transaction listed as Confirmed.
+If you check your terminal running the npx hardhat node, you will see a new output log for the eth_sendRawTransaction and eth_getTransactionReceipt, confirming the transaction was processed.
+Conclusion
+You have now successfully completed the assignment. You've set up a local Hardhat environment, launched a local blockchain node, connected your MetaMask wallet to it, imported a test account, and performed a transaction between two accounts. This setup is the foundation for all smart contract development and testing.
+
+
